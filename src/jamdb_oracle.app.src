@@ -1,0 +1,13 @@
+{application, jamdb_oracle,
+ [{description, "Erlang driver for Oracle Database"},
+  {vsn, "0.5.9"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+  {licenses, ["MIT License"]},
+  {links, [{"Github", "https://github.com/erlangbureau/jamdb_oracle"}]}
+ ]}.
