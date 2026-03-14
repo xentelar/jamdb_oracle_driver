@@ -1,13 +1,10 @@
-{application, jamdb_oracle,
- [{description, "Erlang driver for Oracle Database"},
-  {vsn, "0.5.9"},
-  {registered, []},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
-  {modules, []},
-  {licenses, ["MIT License"]},
-  {links, [{"Github", "https://github.com/erlangbureau/jamdb_oracle"}]}
- ]}.
+{application, jamdb_oracle, [
+    {description, "Erlang driver for Oracle"},
+    {vsn, "0.5.12"},
+    {modules, []},
+    {registered, []},
+    {applications, [kernel,stdlib]},
+    {maintainers, ["Mykhailo Vstavskyi","Sergiy Kostyushkin"]},
+    {licenses, ["MIT"]},
+    {links, [{"Github", "https://github.com/erlangbureau/jamdb_oracle"}]}
+    ]}.
