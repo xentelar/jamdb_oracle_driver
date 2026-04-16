@@ -325,8 +325,8 @@ get_result(block, 0, _RowNumber, _RowFormat, Rows) ->
 get_result(_Type, 0, _RowNumber, [], Rows) ->
     {ok, [{proc_result, 0, Rows}]};
 get_result(_Type, 1403, _RowNumber, RowFormat, Rows) ->
-    Column = [get_result(Fmt) || Fmt <- RowFormat],
-    {ok, [{result_set, Column, [], Rows}]};
+    Columns = [get_result(Fmt) || Fmt <- RowFormat],
+    {ok, [{result_set, Columns, [], Rows}]};
 get_result(_Type, RetCode, _RowNumber, Reason, []) ->
     {error, [{proc_result, RetCode, Reason}]};
 get_result(_Type, _RetCode, _RowNumber, _RowFormat, _Rows) ->
@@ -334,7 +334,11 @@ get_result(_Type, _RetCode, _RowNumber, _RowFormat, _Rows) ->
 
 get_result(undefined) -> [];
 get_result(Cursors) when is_pid(Cursors) -> Cursors ! {get, self()}, receive Reply -> Reply end;
-get_result(#format{column_name=Column}) -> Column.
+%get_result(#format{column_name=Column}) -> Column.
+get_result(#format{column_name=Column, data_type=DT, data_length=DataLength, data_scale=DataScale, charset=C}) -> 
+    DataType = proplists:get_value(DT, ?TNS_TYPES),
+    Charset = proplists:get_value(C, ?ORA_CHARSET),
+    {Column, DataType, DataLength, DataScale, Charset}.
 
 freeval(undefined) -> true;
 freeval(Pid) when is_pid(Pid) -> exit(Pid, ok).

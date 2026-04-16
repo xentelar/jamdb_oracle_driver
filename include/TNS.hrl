@@ -41,6 +41,37 @@
 -define(TNS_TYPE_ADT, 109).
 -define(TNS_TYPE_REF, 111).
 
+-define(TNS_TYPES, [
+  {96, char}, 
+  {1, varchar}, 
+  {9, vcs}, 
+  {2, number}, 
+  {4, float}, 
+  {6, varnum}, 
+  {8, long}, 
+  {24, longraw}, 
+  {23, raw}, 
+  {15, vbi}, 
+  {11, rid}, 
+  {104, rowid}, 
+  {208, urowid}, 
+  {102, refcursor}, 
+  {116, rset}, 
+  {12, date}, 
+  {180, timestamp}, 
+  {181, timestamptz}, 
+  {231, timestampltz}, 
+  {182, intervalym}, 
+  {183, intervalds}, 
+  {112, clob}, 
+  {113, blob}, 
+  {114, bfile}, 
+  {100, bfloat}, 
+  {101, bdouble}, 
+  {109, adt}, 
+  {111, ref}
+]).
+
 -define(TTI_PRO, 1).    %protocol
 -define(TTI_DTY, 2).    %data types
 -define(TTI_FUN, 3).    %function

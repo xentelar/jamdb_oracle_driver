@@ -173,6 +173,43 @@
     {al16utf16, 2000}
 ]).
 
+-define(ORA_CHARSET, [
+    {1, us7ascii},
+    {31, we8iso8859p1},
+    {32, ee8iso8859p2},
+    {34, nee8iso8859p4},
+    {35, cl8iso8859p5},
+    {36, ar8iso8859p6},
+    {37, el8iso8859p7},
+    {38, iw8iso8859p8},
+    {39, we8iso8859p9},
+    {40, ne8iso8859p10},
+    {41, th8tisascii},
+    {45, vn8mswin1258},
+    {46, we8iso8859p15},
+    {47, blt8iso8859p13},
+    {170, ee8mswin1250},
+    {171, cl8mswin1251},
+    {174, el8mswin1253},
+    {175, iw8mswin1255},
+    {177, tr8mswin1254},
+    {178, we8mswin1252},
+    {179, blt8mswin1257},
+    {560, ar8mswin1256},
+    {830, ja16euc},
+    {832, ja16sjis},
+    {837, ja16euctilde},
+    {838, ja16sjistilde},
+    {846, ko16mswin949},
+    {852, zhs16gbk},
+    {860, zht32euc},
+    {865, zht16big5},
+    {867, zht16mswin950},
+    {868, zht16hkscs},
+    {873, al32utf8},
+    {2000, al16utf16}
+]).
+
 -define(REGION, [
     "Africa",
     "America",
