@@ -1,5 +1,7 @@
 -module(jamdb_oracle_conn).
 
+-include_lib("kernel/include/logger.hrl").
+
 %% API
 -export([connect/1, connect/2]).
 -export([reconnect/1]).
@@ -52,16 +54,26 @@ connect(Opts, Tout) ->
     NewPass     = proplists:get_value(newpassword, Opts, []),
     EnvOpts     = proplists:delete(password, proplists:delete(newpassword, Opts)),
     Passwd = spawn(fun() -> loop({Pass, NewPass}) end),
+    ?LOG_DEBUG(#{message => "Start call to Oracle", host => Host, port => Port, 
+                sock_opts => SockOpts, tout => Tout}),
     case gen_tcp:connect(Host, Port, SockOpts, Tout) of
         {ok, Socket} ->
+            ?LOG_DEBUG(#{message => "Start call to Oracle is ok", 
+                socket => Socket}),
             {ok, Socket2} = sock_connect(Socket, SslOpts, Tout),
             {ok, [{recbuf, RecBuf}]} = inet:getopts(Socket2, [recbuf]),
             inet:setopts(Socket2, [{buffer, RecBuf}]),
             State = #oraclient{socket=Socket2, env=EnvOpts, passwd=Passwd, auth=Desc,
             auto=Auto, fetch=Fetch, sdu=Sdu, charset=Charset, timeouts={Tout, ReadTout}},
+            ?LOG_DEBUG(#{message => "Send login request to Oracle", 
+                state => State}),
             {ok, State2} = send_req(login, State),
+            ?LOG_DEBUG(#{message => "Handle login response from Oracle", 
+                state => State2}),
             handle_login(State2#oraclient{conn_state=auth_negotiate});
         {error, Reason} ->
+            ?LOG_ERROR(#{message => "Start call to Oracle was failed", 
+                reason => Reason}),
             handle_error(socket, Reason, #oraclient{})
     end.
 

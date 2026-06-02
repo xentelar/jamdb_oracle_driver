@@ -1,5 +1,9 @@
 -module(jamdb_oracle).
+
+-include_lib("kernel/include/logger.hrl").
+
 -vsn("0.5.12").
+
 -behaviour(gen_server).
 
 %% API
@@ -37,10 +41,16 @@ sql_query(Pid, Query) ->
 init(Opts) ->
     case jamdb_oracle_conn:connect(Opts) of
         {ok, State} ->
+            ?LOG_DEBUG(#{message => "Oracle is connected", 
+                        state => State}),
             {ok, State};
-        {ok, Result, _State} ->
+        {ok, Result, State} ->
+            ?LOG_DEBUG(#{message => "Oracle is connected", 
+                        result => Result, state => State}),
             {stop, Result};
-        {error, Type, Result, _State} ->
+        {error, Type, Result, State} ->
+            ?LOG_ERROR(#{message => "Oracle error", 
+                        type => Type, result => Result, state => State}),
             {stop, {Type, Result}}
     end.
 
