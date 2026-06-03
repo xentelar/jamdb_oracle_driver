@@ -143,6 +143,8 @@ loop(Values) ->
 handle_login(#oraclient{socket=Socket, env=Env, sdu=Length, timeouts=Touts} = State) ->
     case recv(Socket, Length, Touts) of
         {ok, ?TNS_DATA, Data} ->
+            ?LOG_DEBUG(#{message => "Data response from Oracle", 
+                data => Data}),
             case handle_token(Data, State) of
                 {ok, State2} -> handle_login(State2);
                 State2 -> {ok, State2}                  %connected
@@ -150,40 +152,74 @@ handle_login(#oraclient{socket=Socket, env=Env, sdu=Length, timeouts=Touts} = St
         {ok, ?TNS_RESEND, _Data} ->
             {ok, Socket2} = sock_renegotiate(Socket, Env, Touts),
             {ok, State2} = send_req(login, State#oraclient{socket=Socket2}),
+            ?LOG_DEBUG(#{message => "Resend response from Oracle", 
+                socket => Socket2, state => State2}),
             handle_login(State2);
         {ok, ?TNS_ACCEPT, <<_Ver:16,_Opts:16,Sdu:16,_Rest/bits>>} ->
             Task = spawn(fun() -> loop(0) end),
             {ok, State2} = send_req(pro, State#oraclient{seq=Task,sdu=Sdu}),
+            ?LOG_DEBUG(#{message => "Accept response from Oracle", 
+                task => Task,sdu => Sdu, state => State2}),
             handle_login(State2);
         {ok, ?TNS_MARKER, _Data} ->
             handle_req(marker, State, []);
         {ok, ?TNS_REDIRECT, Data} ->
             {ok, Opts} = ?DECODER:decode_token(net, {Data, Env}),
+            ?LOG_DEBUG(#{message => "Redirect response from Oracle", 
+                opts => Opts, state => State}),
             reconnect(State#oraclient{env=Opts});
         {ok, ?TNS_REFUSE, <<_Bin:16,_Length:16,Rest/bits>>} ->
+            ?LOG_DEBUG(#{message => "Refuse response from Oracle", 
+                type => local, reason => Rest, state => State}),
             handle_error(local, binary_to_list(Rest), State);
         {error, Type, Reason} ->
+            ?LOG_ERROR(#{message => "Response error from Oracle", 
+                type => Type, reason => Reason, state => State}),
             handle_error(Type, Reason, State)
     end.
 
 handle_token(<<Token, Data/binary>>, State) ->
     case Token of
-        ?TTI_PRO -> send_req(dty, State);
-        ?TTI_DTY -> send_req(sess, State);
+        ?TTI_PRO -> 
+            ?LOG_DEBUG(#{message => "Token TTI_PRO", 
+                token => Token, data => Data, state => State}),
+            send_req(dty, State);
+        ?TTI_DTY -> 
+            ?LOG_DEBUG(#{message => "Token TTI_DTY", 
+                token => Token, data => Data, state => State}),
+            send_req(sess, State);
         ?TTI_RPA ->
+            ?LOG_DEBUG(#{message => "Token TTI_RPA", 
+                token => Token, data => Data, state => State}),
             case ?DECODER:decode_token(rpa, Data) of
                 {?TTI_SESS, Request} ->
+                    ?LOG_DEBUG(#{message => "Decode TTI_SESS from Token", 
+                        token => Token, data => Data, request => Request, state => State}),
                     send_req(auth, State#oraclient{req=Request});
                 {?TTI_AUTH, Resp, Ver, SessId} ->
+                    ?LOG_DEBUG(#{message => "Decode TTI_AUTH from Token", 
+                        token => Token, data => Data, auth => Resp, server => Ver, state => State}),
                     #oraclient{auth = KeyConn} = State,
                     Cursors = spawn(fun() -> loop([]) end),
                     case jamdb_oracle_crypt:validate(#logon{auth=Resp, key=KeyConn}) of
-                        ok -> State#oraclient{conn_state=connected,auth=SessId,server=Ver,cursors=Cursors};
-                        error -> handle_error(remote, Resp, State)
+                        ok -> 
+                            ?LOG_DEBUG(#{message => "Login is valid", 
+                                    token=>Token, data=>Data, auth=>Resp, key=>KeyConn, state=>State}),
+                            State#oraclient{conn_state=connected, auth=SessId, server=Ver, cursors=Cursors};
+                        error -> 
+                            ?LOG_ERROR(#{message => "Invalid login", 
+                                    token=>Token, data=>Data, reason=>Resp, state=>State}),
+                            handle_error(remote, Resp, State)
                     end
             end;
-        ?TTI_WRN -> handle_token(?DECODER:decode_token(wrn, Data), State);
-        _ -> handle_error(remote, Token, State)
+        ?TTI_WRN -> 
+            ?LOG_DEBUG(#{message => "Token TTI_WRN", 
+                token => Token, data => Data, state => State}),
+            handle_token(?DECODER:decode_token(wrn, Data), State);
+        _ ->
+            ?LOG_ERROR(#{message => "Token undefined", 
+                token => Token, data => Data, state => State}),
+            handle_error(remote, Token, State)
     end.
 
 handle_error(remote, Reason, State) ->
