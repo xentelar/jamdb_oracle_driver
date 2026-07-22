@@ -40,7 +40,7 @@ encode_record(description, EnvOpts) ->
     ")))(ADDRESS=(PROTOCOL="++ case SslOpts of
                [] -> "TCP";
                 _ -> "TCPS" end ++
-    ")(HOST="++Host++")(PORT="++integer_to_list(Port)++")))");
+    ")(HOST="++UserHost++")(PORT="++integer_to_list(Port)++")))");
 encode_record(login, #oraclient{env=EnvOpts,sdu=Sdu,auth=Desc}) ->
     Data = if Desc =/= [] -> encode_str(Desc); true -> encode_record(description, EnvOpts) end,
     <<
