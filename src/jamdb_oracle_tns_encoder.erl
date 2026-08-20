@@ -25,7 +25,7 @@ encode_packet(Type, Data, _Length) ->
 encode_record(description, EnvOpts) ->
     {ok, UserHost}  = inet:gethostname(),
     User            = proplists:get_value(user, EnvOpts),
-    Host            = proplists:get_value(host, EnvOpts, ?DEF_HOST),
+    %Host            = proplists:get_value(host, EnvOpts, ?DEF_HOST),
     Port            = proplists:get_value(port, EnvOpts, ?DEF_PORT),
     Sid             = proplists:get_value(sid, EnvOpts, ?DEF_SID),
     ServiceName     = proplists:get_value(service_name, EnvOpts),
@@ -397,7 +397,7 @@ encode_sb4(Data) ->
 %encode_dalc(Data) -> <<(encode_sb4(byte_size(Data)))/binary,(encode_chr(Data))/binary>>.
 
 encode_str(Data) ->
-    try list_to_binary(Data) of    %latin-1
+    try unicode:characters_to_binary(Data) of    %latin-1
         Bin -> Bin
     catch
         error:_ -> unicode:characters_to_binary(Data)
