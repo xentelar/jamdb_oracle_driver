@@ -9,7 +9,7 @@
 -include("jamdb_oracle.hrl").
 
 -opaque state() :: #oraclient{}.
--type error_type() :: socket | remote | local.
+-type error_type() :: socket | remote | terminate | local.
 -type columns() :: list().
 -type metainfo() :: list().
 -type rows() :: list().
@@ -149,7 +149,7 @@ handle_login(#oraclient{socket=Socket, env=Env, sdu=Length, timeouts=Touts} = St
             {ok, Opts} = ?DECODER:decode_token(net, {Data, Env}),
             reconnect(State#oraclient{env=Opts});
         {ok, ?TNS_REFUSE, <<_Bin:16,_Length:16,Rest/bits>>} ->
-            handle_error(local, binary_to_list(Rest), State);
+            handle_error(terminate, binary_to_list(Rest), State);
         {error, Type, Reason} ->
             handle_error(Type, Reason, State)
     end.
@@ -179,6 +179,9 @@ handle_error(remote, Reason, State) ->
 handle_error(socket, Reason, State) ->
     disconnect(State),
     {error, socket, Reason, State#oraclient{conn_state=disconnected}};
+handle_error(terminate, Reason, State) ->
+    disconnect(State),
+    {error, Reason, State#oraclient{conn_state=disconnected}};
 handle_error(local, Reason, State) ->
     disconnect(State),
     {ok, Reason, State#oraclient{conn_state=disconnected}}.
