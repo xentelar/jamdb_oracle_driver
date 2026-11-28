@@ -35,7 +35,7 @@ connect(Opts) ->
 
 -spec connect([env()], timeout()) -> empty_result().
 connect(Opts, Tout) ->
-    Host        = proplists:get_value(host, Opts, ?DEF_HOST),
+    Host        = proplists:get_value(host, Opts),
     Port        = proplists:get_value(port, Opts, ?DEF_PORT),
     SslOpts     = proplists:get_value(ssl, Opts, []),
     SocketOpts  = proplists:get_value(socket_options, Opts, []),

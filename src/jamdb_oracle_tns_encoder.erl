@@ -25,7 +25,7 @@ encode_packet(Type, Data, _Length) ->
 encode_record(description, EnvOpts) ->
     {ok, UserHost}  = inet:gethostname(),
     User            = proplists:get_value(user, EnvOpts),
-    %Host            = proplists:get_value(host, EnvOpts, ?DEF_HOST),
+    Host            = proplists:get_value(host, EnvOpts),
     Port            = proplists:get_value(port, EnvOpts, ?DEF_PORT),
     Sid             = proplists:get_value(sid, EnvOpts, ?DEF_SID),
     ServiceName     = proplists:get_value(service_name, EnvOpts),
@@ -40,7 +40,7 @@ encode_record(description, EnvOpts) ->
     ")))(ADDRESS=(PROTOCOL="++ case SslOpts of
                [] -> "TCP";
                 _ -> "TCPS" end ++
-    ")(HOST="++UserHost++")(PORT="++integer_to_list(Port)++")))");
+    ")(HOST="++Host++")(PORT="++integer_to_list(Port)++")))");
 encode_record(login, #oraclient{env=EnvOpts,sdu=Sdu,auth=Desc}) ->
     Data = if Desc =/= [] -> encode_str(Desc); true -> encode_record(description, EnvOpts) end,
     <<
